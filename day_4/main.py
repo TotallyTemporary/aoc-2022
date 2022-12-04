@@ -25,9 +25,14 @@ def main():
 		first = set(range(first1, first2 +1))
 		second = set(range(second1, second2 +1))
 
-		if first.issubset(second) or second.issubset(first):
+		# part 1 solution
+		# if first.issubset(second) or second.issubset(first):
+		# 	containment_sum += 1
+
+		# part 2 solution
+		if len(set.intersection(first, second)) != 0:
 			containment_sum += 1
-	
+
 	print(containment_sum)
 
 if __name__ == "__main__":

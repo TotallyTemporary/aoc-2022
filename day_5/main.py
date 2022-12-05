@@ -44,12 +44,13 @@ def get_moves():
 def print_stacks(stacks):
 	print("-----")
 	for i, stack in enumerate(stacks):
-		print(f"{i}: {stack}")
+		print(f"{i+1}: {stack}")
 	print("-----")
 
 def main():
 	stacks = get_initial_state()
 	moves = get_moves()
+	part_1 = False
 
 	# part 1 debug.
 	# stacks = [['N', 'Z'], ['D', 'C', 'M'], ['P']]
@@ -57,9 +58,16 @@ def main():
 	# moves = [[x, y-1, z-1] for x, y, z in moves] # fix indices :)
 
 	for count, from_, to in moves:
-		for _ in range(count):
-			# get and remove "from_" first item, put it in "to" first item.
-			stacks[to].insert(0, stacks[from_].pop(0)) 
+		print_stacks(stacks)
+
+		if part_1:
+			for _ in range(count):
+				# get and remove "from_" first item, put it in "to" first item.
+				stacks[to].insert(0, stacks[from_].pop(0)) 
+		else: # part2
+			values = stacks[from_][:count] # get crates
+			stacks[from_] = stacks[from_][count:] # remove those crates from "from_"
+			stacks[to] = values + stacks[to] # add those crates to "to"
 	
 	# get top values of all stacks
 	print("".join([stack[0] for stack in stacks]))

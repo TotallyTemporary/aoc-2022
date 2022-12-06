@@ -3,9 +3,12 @@ def input_lines():
 		return_value = file.readlines()
 	return return_value
 
+def get_substrings_of_length(string, *, substring_length):
+	return [string[index:index+substring_length] for index in range(0, len(string)-substring_length +1)]
+
 def find_marker(string, *, slice_length):
-	# divide a string into all its [slice_length] -length substrings
-	slices = [string[index:index+slice_length] for index in range(0, len(string)-slice_length)]
+	# divide the input into all possible (contiguous) 4/14 -character slices.
+	slices = get_substrings_of_length(string, substring_length=slice_length)
 
 	# go through all slices in order and find the first one where all character are unique.
 	for index, slice in enumerate(slices):

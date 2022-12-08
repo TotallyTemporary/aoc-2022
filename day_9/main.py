@@ -1,3 +1,5 @@
+from math import prod
+
 def input_lines():
 	with open("./input.txt", "r") as file:
 		return_value = file.read().splitlines()
@@ -74,11 +76,33 @@ def main():
 		
 		return False # ret false is trees blocked in all directions
 
+	def trees_visible_in_dir(index: int, direction: Direction):
+		value = map[index]
+
+		working_index = index   # stepper
+		visible_count = 0       # stepper
+		while not direction.is_edge(working_index):
+			working_index = direction.move(working_index)
+			visible_count += 1
+			if map[working_index] >= value:
+				break
+		return visible_count
+
+	def scenic_score(index: int):
+		return prod([trees_visible_in_dir(index, dir) for dir in directions])
+
+	'''#solves part 1
 	s = 0
 	for index in range(size):
 		if is_visible(index): s += 1
 	print(s)
+	'''
 
+	# solves part 2
+	best = -10000 # get best scenic score of all indices
+	for index in range(size):
+		best = max(best, scenic_score(index))
+	print(best)
 
 if __name__ == "__main__":
 	main()

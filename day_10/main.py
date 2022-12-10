@@ -5,17 +5,30 @@ def input_lines():
 
 reg_X = 1
 cycles = 0
+crt_line = ""
 
 important_sum = 0
 
 def main():
-	global cycles, reg_X, important_sum
+	global cycles, reg_X, important_sum, crt_line
 
 	def increase_clock(count):
-		global cycles, reg_X, important_sum
+		global cycles, reg_X, important_sum, crt_line
 
 		for _ in range(count):
 			cycles += 1
+			crt_position = (cycles % 40)
+			
+			# part 2
+			if crt_position == 0:
+				print(crt_line)
+				crt_line = ""
+			if 0 <= (crt_position - reg_X) <= 2:
+				char = "█"
+			else: char = "."
+			
+			crt_line += char
+			# print(crt_position, cycles, reg_X, crt_line)
 
 			# part 1
 			if (cycles-20) % 40 == 0:

@@ -1,4 +1,4 @@
-import string
+import sys
 
 def input_lines():
 	with open("./input.txt", "r") as file:
@@ -87,40 +87,65 @@ def main():
 		return Cell(index, ord(char))
 	input = [_make_cell(index, value, start_position, end_position) for index, value in enumerate(input_string)]
 
-	# perform breadth-first-search
-	# big thanks to https://en.wikipedia.org/wiki/Breadth-first_search#Pseudocode 
-	search_list = [ input[start_position] ] # positions we need to search
-	input[start_position].searched = True
+	def pathfind(input, from_index):
+		# perform breadth-first-search
+		# big thanks to https://en.wikipedia.org/wiki/Breadth-first_search#Pseudocode 
+		search_list = [ input[from_index] ] # positions we need to search
+		input[from_index].searched = True
 
-	while len(search_list) != 0:
-		cell = search_list.pop()
-		if cell.is_end: break
-		for neighbor in [input[pos] for pos in neighbors(cell.index, directions)]:
-			if neighbor.searched: pass #print(f"{neighbor} already searched.")
-			elif neighbor.value > (cell.value + 1): pass #print(f"{neighbor} is too high {neighbor.value}, {cell.value}")
-			else:
-				neighbor.searched = True
-				neighbor.parent = cell
+		while len(search_list) != 0:
+			cell = search_list.pop()
+			if cell.is_end: 
+				break
+			for neighbor in [input[pos] for pos in neighbors(cell.index, directions)]:
+				if neighbor.searched: pass #print(f"{neighbor} already searched.")
+				elif neighbor.value > (cell.value + 1): pass #print(f"{neighbor} is too high {neighbor.value}, {cell.value}")
+				else:
+					neighbor.searched = True
+					neighbor.parent = cell
 
-				search_list.insert(0, neighbor)
+					search_list.insert(0, neighbor)
+		else:
+			# while didn't break, we didn't find the route.
+			return None
 
-	# make the path from end to start
-	path = [ input[end_position] ]
-	while path[-1].parent != None:
-		path.append(path[-1].parent)
+		# make the path from end to start
+		path = [ input[end_position] ]
+		while path[-1].parent != None:
+			path.append(path[-1].parent)
 
-	# print the map
-	i = 0
-	for y in range(height):
-		for x in range(width):
-			char = lines[y][x]
-			if i in [cell.index for cell in path]: char = "#"
-			print(char, end="")
-			i += 1
-		print()
-	
-	# print the length of the path (part 1 answer)
-	print(f"{path=}, length={len(path)-1}") # why it's off by one i don't know.
+		return path
+
+	def copy_input(input):
+		return [Cell(cell.index, cell.value, cell.is_end) for cell in input]
+
+	# solve part 1
+	part1_path = pathfind(input, start_position)
+	print(f"part1 length={len(part1_path)-1}") # why it's off by one i don't know.
+
+	# solve part 2
+	starting_indices = [cell.index for cell in filter(lambda cell: cell.value == ord('a'), input)]
+	best_path_length = 1000000
+
+	# print(f"{starting_indices=}")
+	while len(starting_indices) != 0:
+		start = starting_indices.pop()
+		path = pathfind(copy_input(input), start)
+		if path is None: continue
+
+		# get the first 'a' value in path (which is the last because path starts from the end :D )
+		last_start_point = next(cell for cell in path if cell.value == ord('a'))
+
+		for cell in path: 
+			if cell in starting_indices:
+				starting_indices.remove(cell.index)
+
+		best_path_length = min(best_path_length, len(pathfind(copy_input(input), last_start_point.index)) -1)
+
+		print("remaining:", len(starting_indices))
+
+	print(f"{best_path_length=}")
+
 
 if __name__ == "__main__":
 	main()

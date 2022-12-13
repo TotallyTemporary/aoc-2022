@@ -1,4 +1,5 @@
 from enum import Enum
+from functools import cmp_to_key
 
 def input_lines():
 	with open("./input.txt", "r") as file:
@@ -82,6 +83,7 @@ def compare(left, right):
 def main():
 	input = iter(input_lines())
 
+	# begin part 1
 	pair_index = 1
 	pair_indices_sum = 0
 	try:
@@ -89,20 +91,47 @@ def main():
 			left = Parser(next(input)).parse()
 			right = Parser(next(input)).parse()
 
-			result = compare(left, right)
-			if result == ComparisonResult.left_lt_right:
-				pair_indices_sum += pair_index
-			elif result == ComparisonResult.left_gt_right: 
-				pass
-			else:
-				raise ValueError(f"Two inputs {left} and {right} were completely equal.")
+			match compare(left, right):
+				case ComparisonResult.left_lt_right:
+					pair_indices_sum += pair_index
+				case ComparisonResult.left_gt_right | ComparisonResult.equal:
+					pass 
+
 			pair_index += 1		
 
 			next(input) # get rid of the empty line
 	except StopIteration:
 		pass
 
-	print(pair_indices_sum)
+	print("Part 1 solution:", pair_indices_sum)
+
+	# part 2
+	input = iter(input_lines())
+	all_packets = list()
+	try:
+		while True:
+			all_packets.append(Parser(next(input)).parse())
+			all_packets.append(Parser(next(input)).parse())
+			next(input)
+	except StopIteration:
+		pass
+
+	divider_1 = [[2]]
+	divider_2 = [[6]]
+	all_packets.append(divider_1)
+	all_packets.append(divider_2)
+
+	def sorting_comp(left, right):
+		match compare(left, right):
+			case ComparisonResult.left_lt_right:
+				return -1
+			case ComparisonResult.left_gt_right:
+				return 1
+			case ComparisonResult.equal:
+				return 0
+	
+	packets_sorted = sorted(all_packets, key = cmp_to_key(sorting_comp))
+	print("part 2 solution:", (packets_sorted.index(divider_1)+1) * (packets_sorted.index(divider_2)+1))
 
 if __name__ == "__main__":
 	main()

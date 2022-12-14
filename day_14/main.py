@@ -7,39 +7,43 @@ def input_lines():
 	return return_value
 
 class World():
-	def __init__(self, coords):
+	def __init__(self, coords, is_part_1=True):
 		self.world_map = coords
 		self.bounds = find_bounds(coords)
+		self.is_part_1 = is_part_1
+		self.start_location = (500, 0)
 
 	def print(self):
-		for y in range(0, self.bounds.max_y):
-			for x in range(self.bounds.min_x, self.bounds.max_x +1):
-				if (x, y) == (500, 0):
-					print("S", end="")
-					continue
-				print("#" if self.is_obstacle(x, y) else ".", end="")
+		for y in range(-5, self.bounds.max_y +5):
+			for x in range(-5 +self.bounds.min_x, self.bounds.max_x +5):
+				char = "#" if self.is_obstacle(x, y) else "."
+				if (x, y) == self.start_location: char = "S"
+				print(char, end="")
 			print()
 	
 	def is_obstacle(self, x, y):
+		if not self.is_part_1 and y == self.bounds.max_y+2: return True
 		return Point(x, y) in self.world_map
 
 	def is_in_bounds(self, x, y):
+		# in part 2 it's not possible to go out of bounds
+		if not self.is_part_1: return True
+
 		if x < self.bounds.min_x: return False
 		if x > self.bounds.max_x: return False
 		# if y < self.bounds.min_y: return False # sand spawns high up, don't delete. 
 		if y > self.bounds.max_y: return False
 		return True
 
-	def part_1_simulate_all(self):
+	def simulate_all(self):
 		count = 0
-		while not self.part_1_simulate(): 
+		while not self.simulate_one(): 
 			count += 1
 		return count
 		
 	# returns True if fell out of map, returns False if stuck.
-	def part_1_simulate(self):
-		start_location = (500, 0)
-		pos = start_location
+	def simulate_one(self):
+		pos = self.start_location
 
 		while self.is_in_bounds(*pos):
 			x, y = pos
@@ -59,6 +63,9 @@ class World():
 				continue
 
 			# we are stuck.
+			if not self.is_part_1 and pos == self.start_location:
+				return True
+			
 			self.world_map.add(Point(*pos))
 			return False
 		return True
@@ -92,12 +99,14 @@ def main():
 				continue
 
 			raise ValueError(f"{p1} and {p2} did not have the same x or y. Diagonal lines not supported")
-		
+	
+	# part 1
+	world = World(coords.copy(), is_part_1=True)
+	print(f"Part 1 solution: {world.simulate_all()}")
 
-	world = World(coords)
-	world.print()
-	print(f"Part 1 solution: {world.part_1_simulate_all()}")
-	world.print()
+	# part 2
+	world = World(coords.copy(), is_part_1=False)
+	print(f"Part 2 solution: {world.simulate_all() +1}") # spent quite some time debugging this until i realised the last grain of sand should be counted.
 
 if __name__ == "__main__":
 	main()

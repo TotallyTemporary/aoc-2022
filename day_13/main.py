@@ -8,10 +8,10 @@ def input_lines():
 
 class Parser():
 	def __init__(self, input: str):
-		self.input = input # input string
+		self.input = input
 		self.index = 0
 
-	# returns true if we advanced, false otherwise
+	# try move forward 1 ; returns true if we advanced, false otherwise
 	def advance(self):
 		self.index += 1
 		if self.index >= len(self.input):
@@ -19,20 +19,19 @@ class Parser():
 			return False
 		return True
 
-	def current(self):
-		return self.input[self.index]
-
-	def error(self, expected):
-		raise ValueError(f"Excepted {expected} at {self.index} but got {self.current()}")
+	# helper funcs
+	def current(self): return self.input[self.index]
+	def error(self, expected): raise ValueError(f"Excepted {expected} at {self.index} but got {self.current()}")
 
 	def parse(self):
 		return self._parse_object()
 
+	# parses int or list, depending on which one is at current index
 	def _parse_object(self):
 		if self.current() == "[": return self._parse_list()
 		elif self.current().isdigit(): return self._parse_int()
-		else: self.error("digit")
-
+		else: self.error("list or digit")
+	
 	def _parse_list(self):
 		if self.current() != "[": self.error("[")
 		self.advance()
@@ -46,7 +45,7 @@ class Parser():
 
 	def _parse_int(self):
 		start = self.index
-		while (self.current().isdigit() and self.advance()): pass
+		while (self.current().isdigit() and self.advance()): pass # stop when no longer digit or end of input
 		end = self.index
 		return int(self.input[start:end])
 
@@ -57,11 +56,11 @@ class ComparisonResult(Enum):
 	
 
 def compare(left, right):
+	# if one type is int and another is list, convert int to list and then compare.
 	if type(left) == int and type(right) == list:
 		left = [left]
 	if type(left) == list and type(right) == int:
 		right = [right]
-
 
 	if type(left) == int:
 		if left < right:   return ComparisonResult.left_lt_right

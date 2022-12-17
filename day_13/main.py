@@ -48,55 +48,39 @@ class Parser():
 		while (self.current().isdigit() and self.advance()): pass # stop when no longer digit or end of input
 		end = self.index
 		return int(self.input[start:end])
-
-class ComparisonResult(Enum):
-	left_lt_right = 0
-	left_gt_right = 1
-	equal         = 2
 	
-
+# left gt right = -1
+# left lt right = 1
+# equal         = 0
 def compare(left, right):
 	# if one type is int and another is list, convert int to list and then compare.
-	if type(left) == int and type(right) == list:
-		left = [left]
-	if type(left) == list and type(right) == int:
-		right = [right]
+	if type(left) == int  and type(right) == list: left  = [left]
+	if type(left) == list and type(right) ==  int: right = [right]
 
-	if type(left) == int:
-		if left < right:   return ComparisonResult.left_lt_right
-		elif left > right: return ComparisonResult.left_gt_right
-		else:              return ComparisonResult.equal
+	# compare ints
+	if type(left) == int: return right - left
 
+	# compare lists element by element
 	if type(left) == list:
 		for el_left, el_right in zip(left, right):
 			result = compare(el_left, el_right)
-			if   result == ComparisonResult.left_lt_right: return ComparisonResult.left_lt_right
-			elif result == ComparisonResult.left_gt_right: return ComparisonResult.left_gt_right
-			else: pass # keep iterating if comparisons are equal.
+			if result != 0: return result # keep iterating if comparisons are equal.
 		
-		# we have made it to the end of one of the lists without a differing element
-		if   len(left) < len(right): return ComparisonResult.left_lt_right
-		elif len(left) > len(right): return ComparisonResult.left_gt_right
-		else:                        return ComparisonResult.equal
+		# we're out of elements, see which one ran out first
+		return len(right) - len(left)
 
 def main():
 	input = iter(input_lines())
 
 	# begin part 1
-	pair_index = 1
 	pair_indices_sum = 0
 	try:
-		while True:
+		for index in range(1, 99999999):
 			left = Parser(next(input)).parse()
 			right = Parser(next(input)).parse()
 
-			match compare(left, right):
-				case ComparisonResult.left_lt_right:
-					pair_indices_sum += pair_index
-				case ComparisonResult.left_gt_right | ComparisonResult.equal:
-					pass 
-
-			pair_index += 1		
+			result = compare(left, right)
+			if result > 0: pair_indices_sum += index
 
 			next(input) # get rid of the empty line
 	except StopIteration:
@@ -108,28 +92,20 @@ def main():
 	input = iter(input_lines())
 	all_packets = list()
 	try:
-		while True:
+		while True: # keep iterating until we hit end of file
 			all_packets.append(Parser(next(input)).parse())
 			all_packets.append(Parser(next(input)).parse())
 			next(input)
 	except StopIteration:
 		pass
 
-	divider_1 = [[2]]
-	divider_2 = [[6]]
-	all_packets.append(divider_1)
-	all_packets.append(divider_2)
-
-	def sorting_comp(left, right):
-		match compare(left, right):
-			case ComparisonResult.left_lt_right:
-				return -1
-			case ComparisonResult.left_gt_right:
-				return 1
-			case ComparisonResult.equal:
-				return 0
+	all_packets.append(divider_1 := [[2]])
+	all_packets.append(divider_2 := [[6]])
 	
-	packets_sorted = sorted(all_packets, key = cmp_to_key(sorting_comp))
+	# sort packets by comparison
+	packets_sorted = sorted(all_packets, key=cmp_to_key(lambda left, right: -compare(left, right)))
+
+	# multiply the indices of the dividers (+1 because first item is not index 0 but index 1)
 	print("part 2 solution:", (packets_sorted.index(divider_1)+1) * (packets_sorted.index(divider_2)+1))
 
 if __name__ == "__main__":
